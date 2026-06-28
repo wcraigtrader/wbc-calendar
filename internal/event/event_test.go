@@ -33,7 +33,7 @@ func assertErrorCount(t *testing.T, e Event, want int) {
 	}
 }
 
-func TestEventAddError(t *testing.T) {
+func TestEvent_addError(t *testing.T) {
 	tests := []struct {
 		name     string
 		inputErr error
@@ -62,7 +62,7 @@ func TestEventAddError(t *testing.T) {
 		})
 	}
 }
-func TestEventGet(t *testing.T) {
+func TestEvent_get(t *testing.T) {
 	tests := []struct {
 		name     string
 		columns  map[string]int
@@ -125,7 +125,7 @@ func TestEventGet(t *testing.T) {
 	}
 }
 
-func TestEventGetInt(t *testing.T) {
+func TestEvent_getInt(t *testing.T) {
 	tests := []struct {
 		name     string
 		value    string
@@ -151,7 +151,7 @@ func TestEventGetInt(t *testing.T) {
 	}
 }
 
-func TestEventGetRequired(t *testing.T) {
+func TestEvent_getRequired(t *testing.T) {
 	validValues := []string{"A", "B", "C"}
 	tests := []struct {
 		name     string
@@ -176,7 +176,7 @@ func TestEventGetRequired(t *testing.T) {
 	}
 }
 
-func TestEventGetOptional(t *testing.T) {
+func TestEvent_getOptional(t *testing.T) {
 	validValues := []string{"A", "B", "C"}
 	tests := []struct {
 		name     string
@@ -201,7 +201,7 @@ func TestEventGetOptional(t *testing.T) {
 	}
 }
 
-func TestEventGetDate(t *testing.T) {
+func TestEvent_getDate(t *testing.T) {
 	zone := time.FixedZone("TestZone", 0)
 
 	tests := []struct {
@@ -241,21 +241,23 @@ func TestEventGetDate(t *testing.T) {
 	}
 }
 
-func TestEventGetTime(t *testing.T) {
+func TestEvent_getTime(t *testing.T) {
 	zone := time.FixedZone("TestZone", 0)
 
 	tests := []struct {
 		name     string
 		value    string
+		wantD	 int
 		wantH    int
 		wantM    int
 		wantNil  bool
 		wantErrs int
 	}{
-		{name: "excel decimal time", value: "13.5", wantH: 13, wantM: 30, wantErrs: 0},
-		{name: "clock time", value: "3:04", wantH: 3, wantM: 4, wantErrs: 0},
-		{name: "invalid time", value: "bad", wantNil: true, wantErrs: 1},
 		{name: "empty time", value: "", wantNil: true, wantErrs: 1},
+		{name: "invalid time", value: "bad", wantNil: true, wantErrs: 1},
+		{name: "excel decimal time", value: "13.5", wantD: 1, wantH: 13, wantM: 30, wantErrs: 0},
+		{name: "clock time", value: "3:04", wantD: 1, wantH: 3, wantM: 4, wantErrs: 0},
+		{name: "late night time", value: "24", wantD: 2, wantH: 0, wantM: 0, wantErrs: 0},
 	}
 
 	for _, tt := range tests {
@@ -267,8 +269,8 @@ func TestEventGetTime(t *testing.T) {
 				if !got.IsZero() {
 					t.Fatalf("getTime = %v, want zero time", got)
 				}
-			} else if got.Hour() != tt.wantH || got.Minute() != tt.wantM {
-				t.Fatalf("getTime = %02d:%02d, want %02d:%02d", got.Hour(), got.Minute(), tt.wantH, tt.wantM)
+			} else if got.Day() != tt.wantD || got.Hour() != tt.wantH || got.Minute() != tt.wantM {
+				t.Fatalf("getTime = %02d:%02d, want %02d:%02d:%02d", got.Day(), got.Hour(), got.Minute(), tt.wantH, tt.wantM)
 			}
 
 			assertErrorCount(t, e, tt.wantErrs)
@@ -276,7 +278,7 @@ func TestEventGetTime(t *testing.T) {
 	}
 }
 
-func TestEventGetDuration(t *testing.T) {
+func TestEvent_getDuration(t *testing.T) {
 	tests := []struct {
 		name     string
 		value    string
@@ -300,7 +302,7 @@ func TestEventGetDuration(t *testing.T) {
 	}
 }
 
-func TestEventGetSession(t *testing.T) {
+func TestEvent_getSession(t *testing.T) {
 	candidates := []string{"Draft", "Demo 1/2", "Heat 1/3", "Round 2/4"}
 	validSession := ""
 	for _, c := range candidates {
@@ -365,3 +367,4 @@ func TestEventGetSession(t *testing.T) {
 		})
 	}
 }
+
