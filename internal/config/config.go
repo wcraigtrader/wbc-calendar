@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -19,10 +20,16 @@ type Config struct {
 
 	Zone *time.Location
 	Year int
+
+	Include []string
+	Exclude []string
 }
 
 func ParseCommandLine() *Config {
 	var config Config
+
+	var include string
+	var exclude string
 
 	flag.StringVar(&config.ExcelFilePath, "file", "", "Path to Excel file (required)")
 	flag.StringVar(&config.ExcelFilePath, "f", "", "Path to Excel file (short form)")
@@ -32,6 +39,10 @@ func ParseCommandLine() *Config {
 	flag.StringVar(&config.SheetName, "s", "App Version", "Sheet name to read (short form)")
 	flag.StringVar(&config.Location, "zone", "America/New_York", "Time zone location (default: America/New_York)")
 	flag.StringVar(&config.Location, "z", "America/New_York", "Time zone location (short form)")
+	flag.StringVar(&include, "include", "", "Comma-separated list of tournament codes to include (default: all)")
+	flag.StringVar(&include, "i", "", "Comma-separated list of tournament codes to include (short form)")
+	flag.StringVar(&exclude, "exclude", "", "Comma-separated list of tournament codes to exclude (default: none)")
+	flag.StringVar(&exclude, "e", "", "Comma-separated list of tournament codes to exclude (short form)")
 	flag.IntVar(&config.Year, "year", 0, "Calendar year")
 	flag.IntVar(&config.Year, "y", 0, "Calendar year (short form)")
 	flag.BoolVar(&config.Clean, "clean", false, "Clean output directory before writing")
@@ -87,6 +98,14 @@ func ParseCommandLine() *Config {
 	if _, err := os.Stat(config.ExcelFilePath); os.IsNotExist(err) {
 		log.Printf("Error: File '%s' does not exist", config.ExcelFilePath)
 		errors_detected = true
+	}
+
+	if include != "" {
+		config.Include = strings.Split(include, ",")
+	}
+
+	if exclude != "" {
+		config.Exclude = strings.Split(exclude, ",")
 	}
 
 	if errors_detected {

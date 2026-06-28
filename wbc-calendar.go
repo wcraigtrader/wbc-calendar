@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 	"os"
+	"path/filepath"
+	"slices"
 
 	"wbc-calendar/internal/calendar"
 	"wbc-calendar/internal/config"
@@ -36,10 +38,6 @@ func main() {
 		return
 	}
 
-	if err := os.MkdirAll(config.CalendarOutput, 0o755); err != nil {
-		log.Fatalf("Error creating output directory '%s': %v", config.CalendarOutput, err)
-	}
-
 	data, err := reader.ReadSheet(config.SheetName, config.Zone, config.Year)
 	if err != nil {
 		log.Fatalf("Error reading sheet '%s': %v", config.SheetName, err)
@@ -47,16 +45,57 @@ func main() {
 
 	log.Printf("Read %d events from sheet '%s'\n", len(data), config.SheetName)
 
+	if err := CreateOutputDirectory(config); err != nil {
+		log.Fatalf("Error creating output directory '%s': %v", config.CalendarOutput, err)
+	}
+
 	schedule := calendar.NewSchedule()
 	for _, event := range data {
+		if len(config.Include) > 0 {
+			if event.Type != "Tournament" {
+				continue
+			}
+			if !slices.Contains(config.Include, event.EventCode) {
+				continue
+			}
+		}
+		if len(config.Exclude) > 0 {
+			if slices.Contains(config.Exclude, event.EventCode) {
+				continue
+			}
+		}
 		schedule.AddEvent(event)
 	}
 
 	schedule.Cleanup()
 	schedule.WriteAllWebCalendars(config.CalendarOutput)
 	schedule.WriteOtherSchedules(config.CalendarOutput)
-	
+
 	website.CreateWebsite(schedule, config.Year, config.CalendarOutput)
 
 	log.Printf("Schedule created with %d tournaments and %d calendars\n", len(schedule.Tournaments), len(schedule.Calendars))
+}
+
+func CreateOutputDirectory(config *config.Config) error {
+	if err := os.MkdirAll(config.CalendarOutput, 0o755); err != nil {
+		return err
+	}
+
+	if config.Clean {
+		entries, err := os.ReadDir(config.CalendarOutput)
+		if err != nil {
+			if !os.IsNotExist(err) {
+				return err
+			}
+		} else {
+			for _, entry := range entries {
+				target := filepath.Join(config.CalendarOutput, entry.Name())
+				if err := os.RemoveAll(target); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	
+	return nil
 }
