@@ -1,0 +1,42 @@
+{{define "tournaments"}}
+<div id="tournaments">
+  <h2>Tournament Events</h2>
+  <table>
+    <tr>
+      <td>
+        {{- range .Tournaments1}}
+        <span class="eventcode">
+          {{- .Code -}}:
+        </span>
+        <a class="eventlink" href="#" onclick="webcal('{{- .Code -}}.ics');">
+          <img src="ical.png"/>
+        </a>
+        <a class="eventlink" href="#" onclick="gcal('{{- .Code -}}.ics');">
+          <img src="gcal16.png"/>
+        </a>
+        <a class="eventlink" href="{{- .Code -}}.ics">
+          {{- .Calendar.Name -}}
+        </a><br/>
+        {{- end}}
+      </td>
+
+      <td>
+        {{- range .Tournaments2}}
+        <span class="eventcode">
+          {{- .Code -}}:
+        </span>
+        <a class="eventlink" href="#" onclick="webcal('{{- .Code -}}.ics');">
+          <img src="ical.png"/>
+        </a>
+        <a class="eventlink" href="#" onclick="gcal('{{- .Code -}}.ics');">
+          <img src="gcal16.png"/>
+        </a>
+        <a class="eventlink" href="{{- .Code -}}.ics">
+          {{- .Calendar.Name -}}
+        </a><br/>
+        {{- end}}
+      </td>
+    </tr>
+  </table>
+</div>
+{{end}}

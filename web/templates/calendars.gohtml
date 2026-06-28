@@ -1,0 +1,20 @@
+{{define "calendars"}}
+<div id="other">
+    <h2>Other Events</h2>
+    <ul>
+    {{- range .Calendars}}
+      <li>
+        <a class="eventlink" href="#" onclick="webcal('{{- .Name -}}.ics');">
+          <img src="ical.png"/>
+        </a>
+        <a class="eventlink" href="#" onclick="gcal('{{- .Name -}}.ics');">
+          <img src="gcal16.png"/>
+        </a>
+        <a class="eventlink" href="{{- .Name -}}.ics">
+          {{- .Name -}}
+        </a>
+      </li>
+    {{end -}}
+    </ul>
+</div>
+{{end}}

@@ -1,0 +1,10 @@
+{{define "others"}}
+<div id="miscellaneous">
+  <h2>Other files</h2>
+  <ul>
+    {{- range .Others}}
+    <li><a href="{{- .Filename -}}">{{- .Description -}}</a></li>
+    {{- end}}
+  </ul>
+</div>
+{{end}}

@@ -1,0 +1,35 @@
+{{- define "index" -}}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    {{template "css" .}}
+    {{template "scripts" .}}
+    <title>{{ .Title }}</title>
+  </head>
+  <body>
+    <div id="header">
+      <h1>{{ .Title }}</h1>
+      <p>These calendars are provided on a 'best effort' basis, but are <b>NOT</b> the 
+      <a href="{{ .WBCSite }}">official schedule</a>.
+         The calendars will be updated as the schedule is updated, and as the program
+         that generates the calendars from the schedule is improved.
+         Please report any errors to <a href="mailto:wbc@trader.name">wbc@trader.name</a>.</p>
+      <p>If your browser handles 'webcal' files, click the <img src="ical.png"/> button.<br/>
+         If you use GoogleCalendar, click the <img src="gcal16.png"/> button.<br/> 
+         Otherwise, copy the link from event name into your calendar program.</p>
+      <p>Download the scripts yourself at <a href="https://github.com/wcraigtrader/wbc2">GitHub</a>.</p>
+    </div>
+    <div id="left">
+      {{template "tournaments" .}}
+    </div>
+    <div id="right">
+      {{ template "calendars" .}}
+      {{ template "others" .}}
+    </div>
+
+    <div id="footer">
+      <p>Updated on {{ .Updated.Format "2006-01-02 15:04 MST" }}.</p>
+    </div>
+  </body>
+</html>
+{{- end -}}
