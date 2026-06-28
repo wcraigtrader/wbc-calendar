@@ -111,7 +111,7 @@ func createVEvent(e *event.Event) *ics.VEvent {
 	v.SetDtStampTime(time.Now())
 	v.SetDescription(e.Description())
 	v.SetLocation(e.Location)
-	v.SetOrganizer(e.GM)
+	v.SetProperty(ics.ComponentPropertyOrganizer, e.GM)
 
 	summary := e.EventName
 	if e.Type == "Tournament" && e.Session != nil {
