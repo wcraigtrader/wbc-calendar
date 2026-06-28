@@ -101,22 +101,25 @@ func NewEvent(headings *Headings, line int, row []string, zone *time.Location, y
 	event.GM = event.get("GM")
 	event.Category = event.getRequired("Category", validCategories)
 
-	for event.Time.Day() > 1 {
-		event.Time = event.Time.Add(-24 * time.Hour)
-		event.Date = event.Date.Add(24 * time.Hour)
-	}
-
-	event.Start = time.Date(
-		event.Date.Year(), event.Date.Month(), event.Date.Day(),
-		event.Time.Hour(), event.Time.Minute(), 0, 0, zone)
-
+	event.setStartTime(zone)
 	event.validate()
 
-	if !event.Date.IsZero() && year != 0 && event.Date.Year() != year {
+	if year != 0 && !event.Date.IsZero() && event.Date.Year() != year {
 		return nil, fmt.Errorf("event date '%s' does not match specified year '%d'", event.Date.Format("2006-01-02"), year)
 	}
 
 	return &event, nil
+}
+
+func (e *Event) setStartTime(zone *time.Location) {
+	for e.Time.Day() > 1 {
+		e.Time = e.Time.Add(-24 * time.Hour)
+		e.Date = e.Date.Add(24 * time.Hour)
+	}
+
+	e.Start = time.Date(
+		e.Date.Year(), e.Date.Month(), e.Date.Day(),
+		e.Time.Hour(), e.Time.Minute(), 0, 0, zone)
 }
 
 func (e *Event) String() string {
@@ -225,7 +228,7 @@ func (e *Event) getSession(column string) *Session {
 
 func (e *Event) validate() {
 	if e.Date.IsZero() {
-		e.addError(fmt.Errorf("missing required Date"))
+	e.addError(fmt.Errorf("missing required Date"))
 	}
 	if e.Location == "" {
 		e.addError(fmt.Errorf("missing required Location"))
@@ -285,6 +288,8 @@ func (e *Event) validate() {
 			e.addError(fmt.Errorf("missing required Format"))
 		}
 	}
+
+	return
 }
 
 func (e *Event) Matches(o *Event) bool {
