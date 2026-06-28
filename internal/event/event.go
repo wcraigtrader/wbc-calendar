@@ -2,6 +2,8 @@ package event
 
 import (
 	"fmt"
+	// "log"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -78,6 +80,8 @@ func NewEvent(headings *Headings, line int, row []string, zone *time.Location, y
 		Line: line,
 	}
 
+	// log.Printf("Processing line %d: %v\n", line, row)
+
 	event.EventCode = event.get("EventCode")
 	event.EventName = event.get("EventName")
 
@@ -96,6 +100,11 @@ func NewEvent(headings *Headings, line int, row []string, zone *time.Location, y
 	event.Location = event.get("Location")
 	event.GM = event.get("GM")
 	event.Category = event.getRequired("Category", validCategories)
+
+	for event.Time.Day() > 1 {
+		event.Time = event.Time.Add(-24 * time.Hour)
+		event.Date = event.Date.Add(24 * time.Hour)
+	}
 
 	event.Start = time.Date(
 		event.Date.Year(), event.Date.Month(), event.Date.Day(),
@@ -150,10 +159,8 @@ func (e *Event) getInt(column string) int {
 
 func (e *Event) getRequired(column string, validValues []string) string {
 	value := e.get(column)
-	for _, valid := range validValues {
-		if value == valid {
-			return value
-		}
+	if slices.Contains(validValues, value) {
+		return value
 	}
 	e.addError(fmt.Errorf("invalid value '%s' in column '%s'", value, e.hds.orig(column)))
 	return value
@@ -219,9 +226,6 @@ func (e *Event) getSession(column string) *Session {
 func (e *Event) validate() {
 	if e.Date.IsZero() {
 		e.addError(fmt.Errorf("missing required Date"))
-	}
-	if e.Time.IsZero() {
-		e.addError(fmt.Errorf("missing required Time"))
 	}
 	if e.Location == "" {
 		e.addError(fmt.Errorf("missing required Location"))
