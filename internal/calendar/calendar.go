@@ -11,6 +11,7 @@ import (
 
 type Calendar struct {
 	Events []*event.Event
+	Filename string
 	Name   string
 }
 
@@ -128,33 +129,6 @@ func (s *Schedule) SortedTournamentList() []*Tournament {
 	sort.Slice(list, func(i, j int) bool {
 		return list[i].Calendar.Name < list[j].Calendar.Name
 	})
-
-	// sort.Slice(list, func(i, j int) bool {
-	// 	var left, right string
-	// 	if list[i] != nil && list[i].Calendar != nil {
-	// 		left = list[i].Calendar.Name
-	// 	}
-	// 	if list[j] != nil && list[j].Calendar != nil {
-	// 		right = list[j].Calendar.Name
-	// 	}
-
-	// 	// Primary sort: calendar name (case-insensitive)
-	// 	li := strings.ToLower(left)
-	// 	rj := strings.ToLower(right)
-	// 	if li != rj {
-	// 		return li < rj
-	// 	}
-
-	// 	// Tie-breaker: tournament code (keeps ordering deterministic)
-	// 	var lc, rc string
-	// 	if list[i] != nil {
-	// 		lc = strings.ToLower(list[i].Code)
-	// 	}
-	// 	if list[j] != nil {
-	// 		rc = strings.ToLower(list[j].Code)
-	// 	}
-	// 	return lc < rc
-	// })
 
 	return list
 }

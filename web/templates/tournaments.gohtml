@@ -8,13 +8,13 @@
         <span class="eventcode">
           {{- .Code -}}:
         </span>
-        <a class="eventlink" href="#" onclick="webcal('{{- .Code -}}.ics');">
+        <a class="eventlink" href="#" onclick="webcal('{{- .Calendar.Filename -}}');">
           <img src="ical.png"/>
         </a>
-        <a class="eventlink" href="#" onclick="gcal('{{- .Code -}}.ics');">
+        <a class="eventlink" href="#" onclick="gcal('{{- .Calendar.Filename -}}');">
           <img src="gcal16.png"/>
         </a>
-        <a class="eventlink" href="{{- .Code -}}.ics">
+        <a class="eventlink" href="{{- .Calendar.Filename -}}">
           {{- .Calendar.Name -}}
         </a><br/>
         {{- end}}
@@ -25,13 +25,13 @@
         <span class="eventcode">
           {{- .Code -}}:
         </span>
-        <a class="eventlink" href="#" onclick="webcal('{{- .Code -}}.ics');">
+        <a class="eventlink" href="#" onclick="webcal('{{- .Calendar.Filename -}}');">
           <img src="ical.png"/>
         </a>
-        <a class="eventlink" href="#" onclick="gcal('{{- .Code -}}.ics');">
+        <a class="eventlink" href="#" onclick="gcal('{{- .Calendar.Filename -}}');">
           <img src="gcal16.png"/>
         </a>
-        <a class="eventlink" href="{{- .Code -}}.ics">
+        <a class="eventlink" href="{{- .Calendar.Filename -}}">
           {{- .Calendar.Name -}}
         </a><br/>
         {{- end}}

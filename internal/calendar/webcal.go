@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"wbc-calendar/internal/event"
@@ -18,7 +19,8 @@ func (s *Schedule) WriteAllWebCalendars(outputDir string) {
 	log.Printf("Creating %d tournament calendars in %s", len(s.Tournaments), outputDir)
 	for _, t := range s.Tournaments {
 		cal := createVCalendar(t.Calendar)
-		filename := fmt.Sprintf("%s/%s.ics", outputDir, t.Code)
+		t.Calendar.Filename = SafeFilename(t.Code) + ".ics"
+		filename := fmt.Sprintf("%s/%s", outputDir, t.Calendar.Filename)
 		if err := writeCalendarFile(cal, filename); err != nil {
 			log.Printf("Error writing calendar file %s: %v", filename, err)
 		} else {
@@ -29,15 +31,24 @@ func (s *Schedule) WriteAllWebCalendars(outputDir string) {
 	log.Printf("Creating %d other calendars in %s", len(s.Calendars), outputDir)
 	for _, c := range s.Calendars {
 		cal := createVCalendar(c)
-		filename := fmt.Sprintf("%s/%s.ics", outputDir, c.Name)
-		if err := writeCalendarFile(cal, filename); err != nil {
-			log.Printf("Error writing calendar file %s: %v", filename, err)
+		c.Filename = SafeFilename(c.Name) + ".ics"
+		pathname := fmt.Sprintf("%s/%s", outputDir, c.Filename)
+		if err := writeCalendarFile(cal, pathname); err != nil {
+			log.Printf("Error writing calendar file %s: %v", pathname, err)
 		} else {
 			count += 1
 		}
 	}
 
 	log.Printf("Created %d calendar files in %s", count, outputDir)
+}
+
+func SafeFilename(name string) string {
+	safe := name
+	safe = strings.ReplaceAll(safe, " ", "_")
+	safe = strings.ReplaceAll(safe, "!", "1")
+	safe = strings.ReplaceAll(safe, "&", "n")
+	return safe
 }
 
 func writeCalendarFile(cal *ics.Calendar, filename string) error {

@@ -4,13 +4,13 @@
     <ul>
     {{- range .Calendars}}
       <li>
-        <a class="eventlink" href="#" onclick="webcal('{{- .Name -}}.ics');">
+        <a class="eventlink" href="#" onclick="webcal('{{- .Filename -}}');">
           <img src="ical.png"/>
         </a>
-        <a class="eventlink" href="#" onclick="gcal('{{- .Name -}}.ics');">
+        <a class="eventlink" href="#" onclick="gcal('{{- .Filename -}}');">
           <img src="gcal16.png"/>
         </a>
-        <a class="eventlink" href="{{- .Name -}}.ics">
+        <a class="eventlink" href="{{- .Filename -}}">
           {{- .Name -}}
         </a>
       </li>
