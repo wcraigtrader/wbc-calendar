@@ -80,24 +80,3 @@ func (er *ExcelReader) ReadSheet(sheetName string, zone *time.Location, year int
 
 	return result, nil
 }
-
-// func (er *ExcelReader) PrintSheetData(sheetName string, zone *time.Location) error {
-// 	data, err := er.ReadSheet(sheetName, zone)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	if len(data) == 0 {
-// 		log.Printf("Sheet '%s' is empty\n", sheetName)
-// 		return nil
-// 	}
-
-// 	fmt.Printf("Sheet: %s\n", sheetName)
-// 	fmt.Printf("Total rows: %d\n\n", len(data))
-
-// 	for _, row := range data {
-// 		fmt.Printf("Row %d: %+v\n", row.Line, row)
-// 	}
-
-// 	return nil
-// }
