@@ -1,6 +1,7 @@
 package calendar
 
 import (
+	"fmt"
 	"log"
 	"sort"
 
@@ -10,14 +11,17 @@ import (
 // ----- Data Types -----------------------------------------------------------
 
 type Calendar struct {
-	Events []*event.Event
+	Events   []*event.Event
 	Filename string
-	Name   string
+	Name     string
+	errs     []error
 }
 
 type Tournament struct {
-	Calendar *Calendar
-	Code     string
+	Calendar  *Calendar
+	Code      string
+	Sessions map[string][]int
+	Totals   map[string]int
 }
 
 type OtherSchedule struct {
@@ -55,17 +59,79 @@ func (c *Calendar) AddEvent(e *event.Event) {
 	c.Events = append(c.Events, e)
 }
 
+func (c * Calendar) addError(err error) {
+	if err != nil {
+		c.errs = append(c.errs, err)
+	}
+}
+
+func (c *Calendar) Validate() {
+	sort.SliceStable(c.Events, func(i, j int) bool {
+		return c.Events[i].Start.Before(c.Events[j].Start)
+	})
+
+	for i := 1; i < len(c.Events); i++ {
+		if c.Events[i].Start.Before(c.Events[i-1].Start) {
+			c.addError(fmt.Errorf("%s session %s starts before %s", c.Name, c.Events[i].Session.Name, c.Events[i-1].Session.Name))
+		}
+	}
+}
+
+func (c *Calendar) ReportErrors() {
+	if len(c.errs) > 0 {
+		log.Printf("Errors found in %s:", c.Name)
+		for _, err := range c.errs {
+			log.Printf("\t%s", err)
+		}
+		for _, e := range c.Events {
+			log.Printf("\tRow %d: %s %s", e.Line, e, e.ErrorString())
+		}
+	}
+}
+
 // ----- Tournament Methods ---------------------------------------------------
 
 func NewTournament(e *event.Event) *Tournament {
 	return &Tournament{
 		Code:     e.EventCode,
 		Calendar: NewCalendar(e.EventName),
+		Sessions: map[string][]int{
+			"Demo":  {},
+			"Heat":  {},
+			"Round": {},
+		},
+		Totals:   map[string]int {"Demo": 0, "Heat": 0, "Round": 0},
 	}
 }
 
 func (t *Tournament) AddEvent(e *event.Event) {
 	t.Calendar.AddEvent(e)
+
+	if e.Session != nil && e.Session.HasMultiples() {
+		t.Sessions[e.Session.Type] = append(t.Sessions[e.Session.Type], e.Session.Number)
+		if t.Totals[e.Session.Type] == 0 {
+			t.Totals[e.Session.Type] = e.Session.Total
+		} else if t.Totals[e.Session.Type] != e.Session.Total {
+			t.Calendar.addError(fmt.Errorf("inconsistent total sessions for %s: %d vs %d", e.Session.Type, t.Totals[e.Session.Type], e.Session.Total))
+		}
+		if e.Session.Number > t.Totals[e.Session.Type] {
+			t.Calendar.addError(fmt.Errorf("session number %d exceeds total %d for %s", e.Session.Number, t.Totals[e.Session.Type], e.Session.Type))
+		}
+	}
+
+}
+
+func (t *Tournament) Validate() {
+	t.Calendar.Validate()
+
+	for sessionType, numbers := range t.Sessions {
+		if len(numbers) > 0 {
+			expectedTotal := t.Totals[sessionType]
+			if len(numbers) != expectedTotal {
+				t.Calendar.addError(fmt.Errorf("expected %d %s sessions, but found %d", expectedTotal, sessionType, len(numbers)))
+			}
+		}
+	}
 }
 
 // ----- Schedule Methods -----------------------------------------------------
@@ -111,6 +177,14 @@ func (s *Schedule) AddOtherSchedule(Filename, Description string) {
 }
 
 func (s *Schedule) Cleanup() {
+	for _, t := range s.Tournaments {
+		t.Validate()
+		t.Calendar.ReportErrors()
+	}
+	for _, c := range s.Calendars {
+		c.Validate()
+		c.ReportErrors()
+	}
 	// Placeholder for cleaning up the schedules, removing duplicates, etc.
 }
 

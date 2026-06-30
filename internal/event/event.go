@@ -47,7 +47,7 @@ func NewSession(value string) (*Session, error) {
 		matches := sessionPattern.FindStringSubmatch(value)
 		sessionType := matches[1]
 		number, total := 0, 0
-		if sessionType == "Demo" || sessionType == "Heat" || sessionType == "Round" {
+		if HasMultiples(sessionType) {
 			number, _ = strconv.Atoi(matches[3])
 			total, _ = strconv.Atoi(matches[4])
 			if number > total {
@@ -64,6 +64,14 @@ func NewSession(value string) (*Session, error) {
 		}, nil
 	}
 	return nil, fmt.Errorf("invalid session format '%s'", value)
+}
+
+func HasMultiples(sessionType string) bool {
+	return sessionType == "Demo" || sessionType == "Heat" || sessionType == "Round"
+}
+
+func (s Session) HasMultiples() bool {
+	return HasMultiples(s.Type)
 }
 
 func (s Session) String() string {
@@ -102,7 +110,7 @@ func NewEvent(headings *Headings, line int, row []string, zone *time.Location, y
 	event.Category = event.getRequired("Category", validCategories)
 
 	event.setStartTime(zone)
-	event.validate()
+	event.Validate()
 
 	if year != 0 && !event.Date.IsZero() && event.Date.Year() != year {
 		return nil, fmt.Errorf("event date '%s' does not match specified year '%d'", event.Date.Format("2006-01-02"), year)
@@ -226,7 +234,7 @@ func (e *Event) getSession(column string) *Session {
 	return session
 }
 
-func (e *Event) validate() {
+func (e *Event) Validate() {
 	if e.Date.IsZero() {
 	e.addError(fmt.Errorf("missing required Date"))
 	}
@@ -288,8 +296,6 @@ func (e *Event) validate() {
 			e.addError(fmt.Errorf("missing required Format"))
 		}
 	}
-
-	return
 }
 
 func (e *Event) Matches(o *Event) bool {

@@ -31,6 +31,8 @@ go.work.sum
 .idea/
 .vscode/
 
+# Transient files
 build/
 live/
 save/
+site/
