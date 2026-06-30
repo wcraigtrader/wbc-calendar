@@ -3,6 +3,7 @@ package event
 import (
 	"fmt"
 	// "log"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -43,36 +44,46 @@ type Event struct {
 	Category string
 }
 
+var sessionPattern = regexp.MustCompile(`(Demo|Heat|Round) +[(]([0-9]+)/([0-9]+)[)]`)
+var sessionDividers = regexp.MustCompile(`[ /()]`)
+
 func NewSession(value string) (*Session, error) {
-	if sessionPattern.MatchString(value) {
-		matches := sessionPattern.FindStringSubmatch(value)
-		sessionType := matches[1]
-		number, total := 0, 0
-		if HasMultiples(sessionType) {
-			number, _ = strconv.Atoi(matches[3])
-			total, _ = strconv.Atoi(matches[4])
-			if number > total {
-				return nil, fmt.Errorf("invalid session format '%s'", value)
-			}
-		} else if matches[3] != "" || matches[4] != "" {
-			return nil, fmt.Errorf("invalid session format '%s'", value)
-		}
+	number, total := 0, 0
+
+	if slices.Contains(validUniqueSessionTypes, value) {
 		return &Session{
 			Name:   value,
-			Type:   sessionType,
+			Type:   value,
 			Number: number,
 			Total:  total,
 		}, nil
 	}
-	return nil, fmt.Errorf("invalid session format '%s'", value)
-}
 
-func HasMultiples(sessionType string) bool {
-	return sessionType == "Demo" || sessionType == "Heat" || sessionType == "Round"
+	parts := sessionDividers.Split(value, -1)
+
+	if slices.Contains(validMultipleSessionTypes, parts[0]) {
+		if len(parts) == 3 {
+			number, _ = strconv.Atoi(parts[1])
+			total, _ = strconv.Atoi(parts[2])
+			return &Session{
+				Name:   value,
+				Type:   parts[0],
+				Number: number,
+				Total:  total,
+			}, nil
+		}
+	}
+
+	return &Session{
+		Name:   value,
+		Type:   parts[0],
+		Number: number,
+		Total:  total,
+	}, fmt.Errorf("Invalid session format '%s'", value)
 }
 
 func (s Session) HasMultiples() bool {
-	return HasMultiples(s.Type)
+	return slices.Contains(validMultipleSessionTypes, s.Type)
 }
 
 func (s Session) String() string {
@@ -165,7 +176,7 @@ func (e *Event) getInt(column string) int {
 	if intValue, err := strconv.Atoi(value); err == nil {
 		return intValue
 	}
-	e.addError(fmt.Errorf("invalid integer '%s' in column '%s'", value, e.hds.orig(column)))
+	e.addError(fmt.Errorf("Invalid integer '%s' in column '%s'", value, e.hds.orig(column)))
 	return 0
 }
 
@@ -174,7 +185,7 @@ func (e *Event) getRequired(column string, validValues []string) string {
 	if slices.Contains(validValues, value) {
 		return value
 	}
-	e.addError(fmt.Errorf("invalid value '%s' in column '%s'", value, e.hds.orig(column)))
+	e.addError(fmt.Errorf("Invalid value '%s' in column '%s'", value, e.hds.orig(column)))
 	return value
 }
 
@@ -191,7 +202,7 @@ func (e *Event) getDate(column string, zone *time.Location) time.Time {
 	if dt, err := time.ParseInLocation("1/2/06", value, zone); err == nil {
 		return dt
 	}
-	e.addError(fmt.Errorf("invalid date '%s' in column '%s'", value, e.hds.orig(column)))
+	e.addError(fmt.Errorf("Invalid date '%s' in column '%s'", value, e.hds.orig(column)))
 	return time.Time{}
 }
 
@@ -205,7 +216,7 @@ func (e *Event) getTime(column string, zone *time.Location) time.Time {
 	if start, err := time.ParseInLocation("3:04", value, zone); err == nil {
 		return start
 	}
-	e.addError(fmt.Errorf("invalid time '%s' in column '%s'", value, e.hds.orig(column)))
+	e.addError(fmt.Errorf("Invalid time '%s' in column '%s'", value, e.hds.orig(column)))
 	return time.Time{}
 }
 
@@ -218,7 +229,7 @@ func (e *Event) getDuration(column string) time.Duration {
 	if err == nil {
 		return time.Duration(duration * float64(time.Hour))
 	}
-	e.addError(fmt.Errorf("invalid duration '%s' in column '%s': %w", value, e.hds.orig(column), err))
+	e.addError(fmt.Errorf("Invalid duration '%s' in column '%s': %w", value, e.hds.orig(column), err))
 	return time.Duration(0)
 }
 
@@ -229,8 +240,7 @@ func (e *Event) getSession(column string) *Session {
 	}
 	session, err := NewSession(value)
 	if err != nil {
-		e.addError(fmt.Errorf("invalid session '%s' in column '%s': %w", value, e.hds.orig(column), err))
-		return nil
+		e.addError(fmt.Errorf("Invalid session '%s' in column '%s'", value, e.hds.orig(column)))
 	}
 	return session
 }

@@ -1,9 +1,5 @@
 package event
 
-import (
-	"regexp"
-)
-
 var columnNames = map[string]string{
 	"Date":        "Date",
 	"Day":         "Day",
@@ -104,10 +100,22 @@ var validFormats = []string{
 	"SwEl",
 }
 
+var validMultipleSessionTypes = []string{
+	"Demo",
+	"Heat",
+	"Round",
+}
+
+var validUniqueSessionTypes = []string{
+	"Draft",
+	"Mulligan",
+	"Quarterfinal",
+	"Semifinal",
+	"Final",
+}
+
 var validStyles = []string{
 	"Continuous",
 	"Freeform",
 	"Scheduled",
 }
-
-var sessionPattern = regexp.MustCompile(`(Demo|Heat|Round|Draft|Mulligan|Quarterfinal|Semifinal|Final) ?((\d)/(\d))?`)
