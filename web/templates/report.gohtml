@@ -1,0 +1,69 @@
+{{define "report"}}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>{{- .Title -}} Discrepancies</title>
+    <style type="text/css">
+      /* body { width: 900px; } */
+      table { border-collapse: collapse; }
+      table, th, td { border: 1px solid black; }
+      td { padding: 2px 4px 2px 4px; }
+      #header { clear:both; margin-bottom: 0px; border-bottom: thin solid black; }
+      #footer { clear:both; margin-top: 10px; border-top: thin solid black; }
+      .event { text-align: left; font-family: monospace; font-size: 120%;}
+      .error { text-align: left; color: red;}
+      .eventcode { text-align: center; vertical-align: top; font-family: monospace;}
+      .eventname { text-align: left; vertical-align: top; }
+      .diff { background-color: #ff9999; }
+      .note { background-color: #ffff99; }
+    </style>
+  </head>
+  <body>
+    <div id="header">
+      <h1>{{ .Title }} Discrepancies</h1>
+      This is a report of discrepancies found in the provided schedule file.
+    </div>
+    <div id="report">
+      {{- range .Tournaments}}
+        {{if .Calendar.HasErrors}}
+          <h2>{{ .Code }}: {{ .Calendar.Name }}</h2>
+          <table>
+            <tr><th>Line</th><th>Event</th></tr>
+            {{range .Calendar.Events}}
+              {{if .HasErrors}}
+                <tr><td>{{.Line}}</td><td><span class="event">{{.}}</span> <span class="error">{{.ErrorString}}</span></td></tr>
+              {{else}}
+                <tr><td>{{.Line}}</td><td><span class="event">{{.}}</td></tr>
+              {{end}}
+            {{end}}
+            {{range .Calendar.Errors}}
+              <tr><td></td><td class="error">{{.}}</td></tr>
+            {{end}}
+          </table>
+        {{end}}
+      {{end -}}
+      {{- range .Calendars}}
+        {{if .HasErrors}}
+          <h2>{{ .Name }}</h2>
+          <table>
+            <tr><th>Line</th><th>Event</th></tr>
+            {{range .Events}}
+              {{if .HasErrors}}
+                <tr><td>{{.Line}}</td><td><span class="event">{{.}}</span> <span class="error">{{.ErrorString}}</span></tr>
+              {{else}}
+                <tr><td>{{.Line}}</td><td><span class="event">{{.}}</td></tr>
+              {{end}}
+            {{end}}
+            {{range .Errors}}
+              <tr><td></td><td class="error">{{.}}</td></tr>
+            {{end}}
+          </table>
+        {{end}}
+      {{end -}}
+    </div>
+    <div id="footer">
+      <p>Updated on {{ .Updated.Format "2006-01-02 15:04 MST" }}.</p>
+    </div>
+  </body>
+</html>
+{{end}}

@@ -12,6 +12,7 @@ import (
 )
 
 type Website struct {
+	Tournaments  []*calendar.Tournament
 	Tournaments1 []*calendar.Tournament
 	Tournaments2 []*calendar.Tournament
 	Calendars    map[string]*calendar.Calendar
@@ -28,20 +29,21 @@ func CreateWebsite(s *calendar.Schedule, year int, outputDir string) {
 	}
 
 	tournaments := s.SortedTournamentList()
-	var l int = len(tournaments)/2
+	var l int = len(tournaments) / 2
 
 	site := Website{
+		Tournaments:  tournaments,
 		Tournaments1: tournaments[0:l],
 		Tournaments2: tournaments[l:],
-		Calendars:   s.Calendars,
-		Others:      s.Others,
+		Calendars:    s.Calendars,
+		Others:       s.Others,
 
 		WBCSite: fmt.Sprintf("http://boardgamers.org/wbc%02d/schedule.html", year%100),
 		Title:   fmt.Sprintf("WBC %d Event Schedule", year),
 		Updated: time.Now(),
 	}
 
-	if err := WriteIndexFromTemplate(site, outputDir); err != nil {
+	if err := WriteSiteFiles(site, outputDir); err != nil {
 		log.Printf("Error rendering website template: %v", err)
 	}
 }
@@ -96,24 +98,35 @@ func copyFile(srcPath, dstPath string) error {
 	return dst.Sync()
 }
 
-func WriteIndexFromTemplate(site Website, outputDir string) error {
+func WriteSiteFiles(site Website, outputDir string) error {
 	tmpl, err := template.ParseGlob("web/templates/*.gohtml")
 	if err != nil {
 		return err
 	}
 
-	outPath := filepath.Join(outputDir, "index.html")
+	if err := WriteTemplate(tmpl, site, outputDir, "index"); err != nil {
+		return err
+	}
+	if err := WriteTemplate(tmpl, site, outputDir, "report"); err != nil {
+		return err
+	}
+
+	log.Printf("Website generated at %s", filepath.Join(outputDir, "index.html"))
+
+	return nil
+}
+
+func WriteTemplate(tmpl *template.Template, data interface{}, outputDir string, templateName string) error {
+	outPath := filepath.Join(outputDir, templateName+".html")
 	outFile, err := os.Create(outPath)
 	if err != nil {
 		return err
 	}
 	defer outFile.Close()
 
-	if err := tmpl.ExecuteTemplate(outFile, "index", site); err != nil {
+	if err := tmpl.ExecuteTemplate(outFile, templateName, data); err != nil {
 		return err
 	}
-
-	log.Printf("Website index generated at %s", outPath)
 
 	return outFile.Sync()
 }

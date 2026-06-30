@@ -20,15 +20,15 @@ func testHeadings(columns map[string]int) *Headings {
 
 func testEvent(columns map[string]int, row []string) Event {
 	return Event{
-		hds:  testHeadings(columns),
-		row:  row,
-		errs: make([]error, 0),
+		hds:    testHeadings(columns),
+		row:    row,
+		Errors: make([]error, 0),
 	}
 }
 
 func assertErrorCount(t *testing.T, e Event, want int) {
 	t.Helper()
-	if got := len(e.errs); got != want {
+	if got := len(e.Errors); got != want {
 		t.Fatalf("len(errs) = %d, want %d; errors=%q", got, want, e.ErrorString())
 	}
 }
@@ -56,7 +56,7 @@ func TestEvent_addError(t *testing.T) {
 			e := testEvent(map[string]int{}, []string{})
 			e.addError(tt.inputErr)
 
-			if got := len(e.errs); got != tt.wantErrs {
+			if got := len(e.Errors); got != tt.wantErrs {
 				t.Fatalf("len(errs) = %d, want %d", got, tt.wantErrs)
 			}
 		})
@@ -247,7 +247,7 @@ func TestEvent_getTime(t *testing.T) {
 	tests := []struct {
 		name     string
 		value    string
-		wantD	 int
+		wantD    int
 		wantH    int
 		wantM    int
 		wantNil  bool
@@ -367,4 +367,3 @@ func TestEvent_getSession(t *testing.T) {
 		})
 	}
 }
-

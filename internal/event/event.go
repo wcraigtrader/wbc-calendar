@@ -17,11 +17,12 @@ type Session struct {
 }
 
 type Event struct {
-	hds  *Headings
-	row  []string
-	errs []error
+	hds *Headings
+	row []string
 
-	Line      int
+	Line   int
+	Errors []error
+
 	EventCode string
 	EventName string
 
@@ -82,10 +83,10 @@ func NewEvent(headings *Headings, line int, row []string, zone *time.Location, y
 	errors := make([]error, 0)
 
 	event := Event{
-		hds:  headings,
-		row:  row,
-		errs: errors,
-		Line: line,
+		hds:    headings,
+		row:    row,
+		Errors: errors,
+		Line:   line,
 	}
 
 	// log.Printf("Processing line %d: %v\n", line, row)
@@ -139,7 +140,7 @@ func (e *Event) String() string {
 
 func (e *Event) addError(err error) {
 	if err != nil {
-		e.errs = append(e.errs, err)
+		e.Errors = append(e.Errors, err)
 	}
 }
 
@@ -236,7 +237,7 @@ func (e *Event) getSession(column string) *Session {
 
 func (e *Event) Validate() {
 	if e.Date.IsZero() {
-	e.addError(fmt.Errorf("missing required Date"))
+		e.addError(fmt.Errorf("missing required Date"))
 	}
 	if e.Location == "" {
 		e.addError(fmt.Errorf("missing required Location"))
@@ -313,14 +314,14 @@ func (e *Event) Matches(o *Event) bool {
 }
 
 func (e *Event) HasErrors() bool {
-	return len(e.errs) > 0
+	return len(e.Errors) > 0
 }
 
 func (e *Event) ErrorString() string {
 	var b strings.Builder
 	first := true
 
-	for _, err := range e.errs {
+	for _, err := range e.Errors {
 		if err == nil {
 			continue
 		}

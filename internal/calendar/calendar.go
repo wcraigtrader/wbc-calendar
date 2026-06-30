@@ -14,7 +14,7 @@ type Calendar struct {
 	Events   []*event.Event
 	Filename string
 	Name     string
-	errs     []error
+	Errors     []error
 }
 
 type Tournament struct {
@@ -61,7 +61,7 @@ func (c *Calendar) AddEvent(e *event.Event) {
 
 func (c * Calendar) addError(err error) {
 	if err != nil {
-		c.errs = append(c.errs, err)
+		c.Errors = append(c.Errors, err)
 	}
 }
 
@@ -77,14 +77,24 @@ func (c *Calendar) Validate() {
 	}
 }
 
+func (c *Calendar) HasErrors() bool {
+	count := len(c.Errors)
+	for _, e := range c.Events {
+		count += len(e.Errors)
+	}
+	return count > 0
+}
+
 func (c *Calendar) ReportErrors() {
-	if len(c.errs) > 0 {
+	if c.HasErrors() {
 		log.Printf("Errors found in %s:", c.Name)
-		for _, err := range c.errs {
+		for _, err := range c.Errors {
 			log.Printf("\t%s", err)
 		}
 		for _, e := range c.Events {
-			log.Printf("\tRow %d: %s %s", e.Line, e, e.ErrorString())
+			for _, err := range e.Errors {
+				log.Printf("\tRow %d: %s %s", e.Line, e, err)
+			}
 		}
 	}
 }
