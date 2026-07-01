@@ -7,7 +7,7 @@ include .env
 # REMOTE= rsync destination for publishing the calendar
 
 YEAR=2026
-SPREADSHEET="data/${YEAR}/2026-AppDev-V2-Fixed.xlsx"
+SPREADSHEET="data/${YEAR}/2026-AppDev-V3-Fixed.xlsx"
 
 BUILD=build
 CACHE=cache
