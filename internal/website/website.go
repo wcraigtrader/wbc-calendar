@@ -7,8 +7,10 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 	"wbc-calendar/internal/calendar"
+	"wbc-calendar/internal/config"
 )
 
 type Website struct {
@@ -23,8 +25,8 @@ type Website struct {
 	Updated time.Time
 }
 
-func CreateWebsite(s *calendar.Schedule, year int, outputDir string) {
-	if err := copyStaticFiles(outputDir); err != nil {
+func CreateWebsite(s *calendar.Schedule, config *config.Config) {
+	if err := copyStaticFiles(config.OutputDirectory); err != nil {
 		log.Printf("Error copying website resources: %v", err)
 	}
 
@@ -38,12 +40,12 @@ func CreateWebsite(s *calendar.Schedule, year int, outputDir string) {
 		Calendars:    s.Calendars,
 		Others:       s.Others,
 
-		WBCSite: fmt.Sprintf("http://boardgamers.org/wbc%02d/schedule.html", year%100),
-		Title:   fmt.Sprintf("WBC %d Event Schedule", year),
+		WBCSite: fmt.Sprintf("http://boardgamers.org/wbc%02d/schedule.html", config.Year%100),
+		Title:   fmt.Sprintf("WBC %d Event Schedule", config.Year),
 		Updated: time.Now(),
 	}
 
-	if err := WriteSiteFiles(site, outputDir); err != nil {
+	if err := WriteSiteFiles(site, config); err != nil {
 		log.Printf("Error rendering website template: %v", err)
 	}
 }
@@ -98,26 +100,30 @@ func copyFile(srcPath, dstPath string) error {
 	return dst.Sync()
 }
 
-func WriteSiteFiles(site Website, outputDir string) error {
+func WriteSiteFiles(site Website, config *config.Config) error {
 	tmpl, err := template.ParseGlob("web/templates/*.gohtml")
 	if err != nil {
 		return err
 	}
 
-	if err := WriteTemplate(tmpl, site, outputDir, "index"); err != nil {
-		return err
-	}
-	if err := WriteTemplate(tmpl, site, outputDir, "report"); err != nil {
+	if err := WriteTemplate(tmpl, site, config.OutputDirectory, "index", "index.html"); err != nil {
 		return err
 	}
 
-	log.Printf("Website generated at %s", filepath.Join(outputDir, "index.html"))
+	reportName := strings.Split(config.ExcelFilePath, "/")[len(strings.Split(config.ExcelFilePath, "/"))-1]
+	reportName = strings.TrimSuffix(reportName, filepath.Ext(reportName))
+	reportName = fmt.Sprintf("report-%s.html", reportName)
+	if err := WriteTemplate(tmpl, site, config.OutputDirectory, "report", reportName); err != nil {
+		return err
+	}
+
+	log.Printf("Website generated at %s", filepath.Join(config.OutputDirectory, "index.html"))
 
 	return nil
 }
 
-func WriteTemplate(tmpl *template.Template, data interface{}, outputDir string, templateName string) error {
-	outPath := filepath.Join(outputDir, templateName+".html")
+func WriteTemplate(tmpl *template.Template, data interface{}, outputDir string, templateName string, outputName string) error {
+	outPath := filepath.Join(outputDir, outputName)
 	outFile, err := os.Create(outPath)
 	if err != nil {
 		return err

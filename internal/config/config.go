@@ -9,10 +9,10 @@ import (
 )
 
 type Config struct {
-	ExcelFilePath  string
-	CalendarOutput string
-	SheetName      string
-	Location       string
+	ExcelFilePath   string
+	OutputDirectory string
+	SheetName       string
+	Location        string
 
 	Clean    bool
 	ListOnly bool
@@ -33,8 +33,8 @@ func ParseCommandLine() *Config {
 
 	flag.StringVar(&config.ExcelFilePath, "file", "", "Path to Excel file (required)")
 	flag.StringVar(&config.ExcelFilePath, "f", "", "Path to Excel file (short form)")
-	flag.StringVar(&config.CalendarOutput, "output", "build", "Output directory for calendar files")
-	flag.StringVar(&config.CalendarOutput, "o", "build", "Output directory for calendar files (short form)")
+	flag.StringVar(&config.OutputDirectory, "output", "build", "Output directory for calendar files")
+	flag.StringVar(&config.OutputDirectory, "o", "build", "Output directory for calendar files (short form)")
 	flag.StringVar(&config.SheetName, "sheet", "App Version", "Sheet name to read")
 	flag.StringVar(&config.SheetName, "s", "App Version", "Sheet name to read (short form)")
 	flag.StringVar(&config.Location, "zone", "America/New_York", "Time zone location (default: America/New_York)")
@@ -84,7 +84,7 @@ func ParseCommandLine() *Config {
 		config.Year += 2000
 	}
 
-	if config.CalendarOutput == "" {
+	if config.OutputDirectory == "" {
 		log.Printf("Error: Output directory for calendar files is required\n")
 		errors_detected = true
 	}
@@ -115,7 +115,7 @@ func ParseCommandLine() *Config {
 
 	if config.Verbose {
 		log.Printf("Configuration:")
-		log.Printf("  Output: %s", config.CalendarOutput)
+		log.Printf("  Output: %s", config.OutputDirectory)
 		log.Printf("  File:   %s", config.ExcelFilePath)
 		log.Printf("  Sheet:  %s", config.SheetName)
 		log.Printf("  Zone:   %s", config.Zone)

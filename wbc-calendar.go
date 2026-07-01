@@ -46,7 +46,7 @@ func main() {
 	log.Printf("Read %d events from sheet '%s'\n", len(data), config.SheetName)
 
 	if err := CreateOutputDirectory(config); err != nil {
-		log.Fatalf("Error creating output directory '%s': %v", config.CalendarOutput, err)
+		log.Fatalf("Error creating output directory '%s': %v", config.OutputDirectory, err)
 	}
 
 	schedule := calendar.NewSchedule()
@@ -68,34 +68,34 @@ func main() {
 	}
 
 	schedule.Cleanup()
-	schedule.WriteAllWebCalendars(config.CalendarOutput)
-	schedule.WriteOtherSchedules(config.CalendarOutput)
+	schedule.WriteAllWebCalendars(config.OutputDirectory)
+	schedule.WriteOtherSchedules(config.OutputDirectory)
 
-	website.CreateWebsite(schedule, config.Year, config.CalendarOutput)
+	website.CreateWebsite(schedule, config)
 
 	log.Printf("Schedule created with %d tournaments and %d calendars\n", len(schedule.Tournaments), len(schedule.Calendars))
 }
 
 func CreateOutputDirectory(config *config.Config) error {
-	if err := os.MkdirAll(config.CalendarOutput, 0o755); err != nil {
+	if err := os.MkdirAll(config.OutputDirectory, 0o755); err != nil {
 		return err
 	}
 
 	if config.Clean {
-		entries, err := os.ReadDir(config.CalendarOutput)
+		entries, err := os.ReadDir(config.OutputDirectory)
 		if err != nil {
 			if !os.IsNotExist(err) {
 				return err
 			}
 		} else {
 			for _, entry := range entries {
-				target := filepath.Join(config.CalendarOutput, entry.Name())
+				target := filepath.Join(config.OutputDirectory, entry.Name())
 				if err := os.RemoveAll(target); err != nil {
 					return err
 				}
 			}
 		}
 	}
-	
+
 	return nil
 }
