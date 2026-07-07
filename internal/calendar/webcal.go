@@ -77,7 +77,7 @@ func createVCalendar(c *Calendar) *ics.Calendar {
 	code := firstEvent.EventCode
 
 	name := c.Name
-	if firstEvent.Type == "Tournament" {
+	if firstEvent.IsTournament() {
 		name = code + " " + name
 	}
 
@@ -125,7 +125,7 @@ func createVEvent(e *event.Event) *ics.VEvent {
 	v.SetProperty(ics.ComponentPropertyOrganizer, e.GM)
 
 	summary := e.EventName
-	if e.Type == "Tournament" && e.Session != nil {
+	if e.IsTournament() && e.Session != nil {
 		summary += " " + e.Session.Name
 	}
 	v.SetSummary(summary)
@@ -135,7 +135,7 @@ func createVEvent(e *event.Event) *ics.VEvent {
 		v.SetURL(url)
 	}
 
-	if e.Type == "Tournament" {
+	if e.IsTournament() {
 		continuous := ""
 		if e.Style == "Continuous" {
 			continuous = "Y"

@@ -367,3 +367,27 @@ func TestEvent_getSession(t *testing.T) {
 		})
 	}
 }
+
+func TestEvent_setStartTime(t *testing.T) {
+	tests := []struct {
+		name string // description of this test case
+		// Named input parameters for receiver constructor.
+		cheadings *Headings
+		crow      []string
+		czone     *time.Location
+		cyear     int
+		// Named input parameters for target function.
+		zone *time.Location
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e, err := NewEvent(tt.cheadings, 0, tt.crow, tt.czone, tt.cyear)
+			if err != nil {
+				t.Fatalf("could not construct receiver type: %v", err)
+			}
+			e.setStartTime(tt.zone)
+		})
+	}
+}

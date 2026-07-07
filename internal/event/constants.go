@@ -9,6 +9,7 @@ var columnNames = map[string]string{
 	"Event":       "EventName",
 	"Type":        "Type",
 	"RoundHeat":   "Session",
+	"Round/Heat":   "Session",
 	"R/H":         "Session",
 	"Prize Level": "Prizes",
 	"Class":       "Class",

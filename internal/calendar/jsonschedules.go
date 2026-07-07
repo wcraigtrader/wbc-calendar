@@ -46,7 +46,7 @@ func (s *Schedule) CreateJsonSchedule(outputDir string) {
 	file.WriteString("[\n")
 	for i, e := range s.Everything {
 		eventname := e.EventName
-		if e.Type == "Tournament" && e.Session != nil {
+		if e.IsTournament() && e.Session != nil {
 			eventname += " " + e.Session.Name
 		}
 		continuous := ""

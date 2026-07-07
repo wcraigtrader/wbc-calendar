@@ -106,7 +106,7 @@ func NewEvent(headings *Headings, line int, row []string, zone *time.Location, y
 	event.EventName = event.get("EventName")
 
 	event.Date = event.getDate("Date", zone)
-	event.Day = event.getRequired("Day", validDays)
+	event.Day = event.getOptional("Day", validDays)
 	event.DayCode = event.getRequired("DayCode", validDayCodes)
 	event.Time = event.getTime("Time", zone)
 	event.Duration = event.getDuration("Duration")
@@ -143,7 +143,7 @@ func (e *Event) setStartTime(zone *time.Location) {
 }
 
 func (e *Event) String() string {
-	if e.Type == "Tournament" {
+	if e.IsTournament() {
 		return fmt.Sprintf("%s (%s) %s @ %s", e.EventName, e.EventCode, e.Session, e.Start.Format("2006-01-02 15:04"))
 	}
 	return fmt.Sprintf("%s (%s) @ %s", e.EventName, e.Category, e.Start.Format("2006-01-02 15:04"))
@@ -245,6 +245,16 @@ func (e *Event) getSession(column string) *Session {
 	return session
 }
 
+func (e *Event) IsTournament() bool {
+	if e.Type == "Tournament" {
+		return true
+	}
+	if e.Type == "" && e.EventCode != "" {
+		return true
+	}
+	return false
+}
+
 func (e *Event) Validate() {
 	if e.Date.IsZero() {
 		e.addError(fmt.Errorf("missing required Date"))
@@ -314,7 +324,7 @@ func (e *Event) Matches(o *Event) bool {
 	if e == nil || o == nil || e.Type != o.Type {
 		return false
 	}
-	if e.Type == "Tournament" {
+	if e.IsTournament() {
 		matches = e.EventCode == o.EventCode && e.Session != nil && o.Session != nil && e.Session.Name == o.Session.Name
 	} else {
 		matches = e.Category == o.Category && e.EventName == o.EventName
@@ -354,7 +364,7 @@ func (e *Event) Description() string {
 	b.WriteString(": ")
 	b.WriteString(e.EventName)
 
-	if e.Type == "Tournament" && e.Session != nil {
+	if e.IsTournament() && e.Session != nil {
 		b.WriteString(" ")
 		b.WriteString(e.Session.Name)
 	}
@@ -370,7 +380,7 @@ func (e *Event) Description() string {
 func (e *Event) PreviewURL() string {
 	// https://www.boardgamers.org/wbc26/previews/waw.html
 
-	if e.Type == "Tournament" {
+	if e.IsTournament() {
 		year := e.Date.Format("06")
 		code := strings.ToLower(e.EventCode)
 		return fmt.Sprintf("https://www.boardgamers.org/wbc%s/previews/%s.html", year, code)
@@ -381,7 +391,7 @@ func (e *Event) PreviewURL() string {
 func (e *Event) UID() string {
 	// UID:WBC 2025: A World at War Demo 1/1
 	// UID:WBC 2025: Shuttle from Pittsburgh Airport
-	if e.Type == "Tournament" {
+	if e.IsTournament() {
 		return fmt.Sprintf("WBC/%s/%s/%s/%s", e.Date.Format("2006"), e.EventCode, e.EventName, e.Session.Name)
 	}
 	return fmt.Sprintf("WBC/%s/%s/%s/%s/%s", e.Date.Format("2006"), e.Category, e.EventName, e.DayCode, e.Start.Format("15:04"))

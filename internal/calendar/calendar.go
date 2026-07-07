@@ -159,7 +159,7 @@ func NewSchedule() *Schedule {
 func (s *Schedule) AddEvent(e *event.Event) {
 	s.Everything = append(s.Everything, e)
 
-	if e.Type == "Tournament" {
+	if e.IsTournament() {
 		if t, ok := s.Tournaments[e.EventCode]; ok {
 			t.AddEvent(e)
 		} else {

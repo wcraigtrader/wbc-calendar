@@ -52,7 +52,7 @@ func main() {
 	schedule := calendar.NewSchedule()
 	for _, event := range data {
 		if len(config.Include) > 0 {
-			if event.Type != "Tournament" {
+			if !event.IsTournament() {
 				continue
 			}
 			if !slices.Contains(config.Include, event.EventCode) {

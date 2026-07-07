@@ -53,7 +53,7 @@ func (s *Schedule) CreateCSVDetails(outputDir string) {
 
 	for _, e := range s.Everything {
 		eventname := e.EventName
-		if e.Type == "Tournament" && e.Session != nil {
+		if e.IsTournament() && e.Session != nil {
 			eventname += " " + e.Session.Name
 		}
 		continuous := ""
@@ -119,7 +119,7 @@ func (s *Schedule) CreateCSVSchedule(outputDir string) {
 
 	for _, e := range s.Everything {
 		eventname := e.EventName
-		if e.Type == "Tournament" && e.Session != nil {
+		if e.IsTournament() && e.Session != nil {
 			eventname += " " + e.Session.Name
 		}
 		continuous := ""
